@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 
 @Dao
-
 interface TaskDao {
     @Insert
     suspend fun insertTask(entity: EntityTask)
@@ -19,5 +18,5 @@ interface TaskDao {
     fun deleteAll()
 
     @Query("SELECT * FROM Task")
-    fun getTask(): MutableList<EntityTask>
+    fun getTask(): List<EntityTask>
 }

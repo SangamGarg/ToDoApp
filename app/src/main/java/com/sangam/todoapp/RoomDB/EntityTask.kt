@@ -11,5 +11,4 @@ data class EntityTask(
     var currentDate: String,
     var dueDate: String,
     var priority: String
-
 )

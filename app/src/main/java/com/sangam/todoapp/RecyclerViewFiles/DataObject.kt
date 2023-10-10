@@ -2,7 +2,6 @@ package com.sangam.todoapp.RecyclerViewFiles
 
 object DataObject {
     var listData = mutableListOf<DataClassTask>()
-
     fun setData(
         task: String,
         currentDate: String,
@@ -14,7 +13,7 @@ object DataObject {
         )
     }
 
-    fun getData(): List<DataClassTask> {
+    fun getData(): MutableList<DataClassTask> {
         return listData
     }
 
