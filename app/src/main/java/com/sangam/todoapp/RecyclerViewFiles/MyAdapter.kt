@@ -67,4 +67,6 @@ class MyAdapter(var list: List<DataClassTask>) : Adapter<MyAdapter.MyViewHolder>
     override fun getItemCount(): Int {
         return list.size
     }
+
+
 }

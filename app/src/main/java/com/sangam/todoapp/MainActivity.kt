@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.Window
 import android.widget.*
@@ -14,56 +15,61 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.sangam.todoapp.RecyclerViewFiles.DataClassTask
 import com.sangam.todoapp.RecyclerViewFiles.DataObject
 import com.sangam.todoapp.RecyclerViewFiles.MyAdapter
 import com.sangam.todoapp.RoomDB.EntityTask
 import com.sangam.todoapp.RoomDB.TaskDatabase
+import com.sangam.todoapp.databinding.ActivityMainBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
+@Suppress("UNCHECKED_CAST")
 class MainActivity : AppCompatActivity() {
-    lateinit var fab: FloatingActionButton
-    lateinit var recyclerView: RecyclerView
     private val calendar = Calendar.getInstance()
     lateinit var spinner: Spinner
     lateinit var formatteddate: String
     lateinit var selectedItem: String
     lateinit var myAdapter: MyAdapter
-
     private lateinit var database: TaskDatabase
+    val binding by lazy {
+        ActivityMainBinding.inflate(layoutInflater)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Thread.sleep(100)
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(binding.root)
         window.statusBarColor = Color.TRANSPARENT
         database = TaskDatabase.getDatabase(this)
 
-        fab = findViewById(R.id.floatingActionButton)
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager =
+        binding.recyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        getData()
-        fab.setOnClickListener {
+        binding.floatingActionButton.setOnClickListener {
             newTaskDialog()
         }
 
-        myAdapter = MyAdapter(DataObject.getData())
-        recyclerView.adapter = myAdapter
-        myAdapter.setOnItemClickListener(object : MyAdapter.onItemClickListener {
-            override fun onItemClick(task: String?, position: Int) {
-                openUpdateDialog(task!!, position)
-            }
-        })
-        swipeToDelete()
+        GlobalScope.launch {
+            DataObject.listData = database.taskdao().getTask() as MutableList<DataClassTask>
+            Log.d("ROOMDATABASE", DataObject.listData.toString())
+            // Update the adapter with the retrieved data
+            runOnUiThread {
+                myAdapter.notifyDataSetChanged()
 
+            }
+        }
+        print("hello")
+
+        myAdapter = MyAdapter(DataObject.listData) // Initialize the adapter with an empty list
+        binding.recyclerView.adapter = myAdapter
+
+
+        swipeToDelete()
     }
 
 
@@ -88,12 +94,9 @@ class MainActivity : AppCompatActivity() {
         }
         addTask.setOnClickListener {
             val task = edittextTask.text.toString()
-
-
             if (task.trim().isNotEmpty() && selectedItem != "Choose Priority") {
                 DataObject.setData(
-                    task, dateFormat, formatteddate,
-                    selectedItem
+                    task, dateFormat, formatteddate, selectedItem
                 )
                 GlobalScope.launch {
                     database.taskdao().insertTask(
@@ -138,6 +141,32 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
+
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
     private fun datePickerDialog() {
         val currentDate = Calendar.getInstance()
         val datePickerDialog = DatePickerDialog(
@@ -212,7 +241,11 @@ class MainActivity : AppCompatActivity() {
 
                 // below line is to display our snackbar with action.
 
-                Snackbar.make(recyclerView, "Deleted " + deleteTask.task, Snackbar.LENGTH_LONG)
+                Snackbar.make(
+                    binding.recyclerView,
+                    "Deleted " + deleteTask.task,
+                    Snackbar.LENGTH_LONG
+                )
                     .setBackgroundTint(Color.parseColor("#E266F7"))
                     .setAction(
                         "Undo",
@@ -264,23 +297,6 @@ class MainActivity : AppCompatActivity() {
 //            }
             // at last we are adding this
             // to our recycler view.
-        }).attachToRecyclerView(recyclerView)
+        }).attachToRecyclerView(binding.recyclerView)
     }
-
-    fun getData() {
-        if (DataObject.listData.isNotEmpty()) {
-            GlobalScope.launch {
-                val tasks = database.taskdao().getTask() as MutableList<DataClassTask>
-                DataObject.listData.clear()
-                DataObject.listData.addAll(tasks)
-                myAdapter.notifyDataSetChanged()
-
-            }
-
-        } else {
-            Toast.makeText(this, "Write Something", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-
 }
